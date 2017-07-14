@@ -196,3 +196,5 @@ def gameloop():
 		clock.tick(60) # frame per sec
 intro()		
 gameloop()	
+#this is not yet completed there are many changes required to improve this game
+#By_Sumit_Patidar
