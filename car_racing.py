@@ -15,16 +15,16 @@ blue = (0,0,255)
 car_width = 50
 car_height = 100
 #start_music = pygame.mixer.Sound("Hurry_Up.mp3")
-pygame.mixer.music.load("Hurry_Up.mp3")
+pygame.mixer.music.load("assets/Hurry_Up.mp3")
 gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption("Car Racing")
 clock = pygame.time.Clock()
 
-carImg = pygame.image.load("car1.png") #load the car image
-car2Img = pygame.image.load("car2.png")
-bgImg = pygame.image.load("back2.jpg")
-crash_img = pygame.image.load("crash.png")
-svs = pygame.image.load("svs.png")
+carImg = pygame.image.load("assets/car1.png") #load the car image
+car2Img = pygame.image.load("assets/car2.png")
+bgImg = pygame.image.load("assets/back2.jpg")
+crash_img = pygame.image.load("assets/crash.png")
+svs = pygame.image.load("assets/svs.png")
 def intro():
 	#pygame.mixr.Sound.play(start_music)
 	intro = True
@@ -70,25 +70,28 @@ def intro():
 		pygame.display.update()
 		clock.tick(50)
 
+#This function update the score
 def highscore(count):
 	font = pygame.font.SysFont(None,20)
 	text = font.render("Score : "+str(count),True,black)
 	gameDisplay.blit(text,(0,0))
 	
+#This function print obstacle cars
 def draw_things(thingx,thingy,thing):
 	gameDisplay.blit(thing,(thingx,thingy))
 	
-
+#This function print our car
 def car(x,y):
 	gameDisplay.blit(carImg,(x,y))
 
+#this function make the rectangles for buttons from initial menu
 def text_objects(text,font):
 	textSurface = font.render(text,True,black)
 	return textSurface,textSurface.get_rect()
 	
-	
+#This functio print buttons
 def message_display(text,size,x,y):
-	font = pygame.font.Font("freesansbold.ttf",size)
+	font = pygame.font.Font("assets/CaviarDreams.ttf",size)
 	text_surface , text_rectangle = text_objects(text,font)
 	text_rectangle.center =(x,y)
 	gameDisplay.blit(text_surface,text_rectangle)
@@ -97,10 +100,21 @@ def message_display(text,size,x,y):
 	
 	
 def crash(x,y):
+	#Stop Music
+	pygame.mixer.music.stop()
+
+	#this put the crach img in the cash car position
 	gameDisplay.blit(crash_img,(x,y))
+
+	#Put Message, update display, and wait 
 	message_display("You Crashed",115,display_width/2,display_height/2)
 	pygame.display.update()
 	time.sleep(2)
+
+	message_display(":(",115,display_width/2,display_height/2)
+	pygame.display.update()
+	time.sleep(2)
+	intro()
 	gameloop() #for restart the game
 	
 def gameloop():
@@ -136,9 +150,9 @@ def gameloop():
 			
 			if event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_LEFT:
-					car_x_change = -5
+					car_x_change = -0.9
 				elif event.key == pygame.K_RIGHT:
-					car_x_change = 5
+					car_x_change = 0.9
 				
 					
 			if event.type == pygame.KEYUP:
@@ -175,6 +189,9 @@ def gameloop():
 		draw_things(thing_startx,thing_starty,car2Img)
 		highscore(count)
 		count+=1
+
+		#Update Speed Obstacle Cars
+		thing_speed += 0.003
 		thing_starty += thing_speed
 		
 		if thing_starty > display_height:
@@ -193,7 +210,7 @@ def gameloop():
 		
 		
 		pygame.display.update() # update the screen
-		clock.tick(60) # frame per sec
+		clock.tick(128) # frame per sec
 intro()		
 gameloop()	
 #this is not yet completed there are many changes required to improve this game

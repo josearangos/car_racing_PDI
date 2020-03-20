@@ -1,0 +1,12 @@
+Parametros que podemos modificar
+-Teclas
+-Sensibilidad de las teclas (Dinamico)
+-Velocidad de fondo (Estatico)
+-Velocidad de obstaculos (Dinamico)
+-tamaño de la pista
+-Tamaño de los carros 
+-Fuente 
+-Tamaño de la ventana
+-Colores
+
+Todo lo que sea gráfico es mejor inicializarlo estatico para evitar errores visuales.
