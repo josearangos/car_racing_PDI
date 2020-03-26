@@ -20,11 +20,11 @@ gameDisplay = pygame.display.set_mode((display_width,display_height))
 pygame.display.set_caption("Car Racing")
 clock = pygame.time.Clock()
 
-carImg = pygame.image.load("assets/car1.png") #load the car image
+carImg = pygame.image.load("assets/car3.png") #load the car image
 car2Img = pygame.image.load("assets/car2.png")
 bgImg = pygame.image.load("assets/back2.jpg")
+bgImg2 = pygame.image.load("assets/back3.jpg")
 crash_img = pygame.image.load("assets/crash.png")
-svs = pygame.image.load("assets/svs.png")
 def intro():
 	#pygame.mixr.Sound.play(start_music)
 	intro = True
@@ -46,7 +46,7 @@ def intro():
 			
 		gameDisplay.fill(white)
 		message_display("CAR RACING",100,display_width/2,display_height/2)
-		gameDisplay.blit(svs,((display_width/2)-100,10))	
+		gameDisplay.blit(carImg,((display_width/2)-100,10))	
 		pygame.draw.rect(gameDisplay,green,(200,400,100,50))
 		pygame.draw.rect(gameDisplay,red,(500,400,100,50))
 		
@@ -72,9 +72,20 @@ def intro():
 
 #This function update the score
 def highscore(count):
-	font = pygame.font.SysFont(None,20)
+	font = pygame.font.SysFont(None,60)
 	text = font.render("Score : "+str(count),True,black)
 	gameDisplay.blit(text,(0,0))
+
+def try_again_counter(count,score):
+	#Try Again Timer
+	font = pygame.font.SysFont(None,250)
+	text = font.render(str(count),True,black)
+	gameDisplay.blit(text,(350,250))
+
+	#Final Score
+	font = pygame.font.SysFont(None,115)
+	text = font.render("Score : "+str(score),True,black)
+	gameDisplay.blit(text,(165,170))
 	
 #This function print obstacle cars
 def draw_things(thingx,thingy,thing):
@@ -99,7 +110,8 @@ def message_display(text,size,x,y):
 	
 	
 	
-def crash(x,y):
+def crash(x,y,score):
+	reset = 3
 	#Stop Music
 	pygame.mixer.music.stop()
 
@@ -109,19 +121,22 @@ def crash(x,y):
 	#Put Message, update display, and wait 
 	message_display("You Crashed",115,display_width/2,display_height/2)
 	pygame.display.update()
-	time.sleep(2)
+	time.sleep(3)
 
-	message_display(":(",115,display_width/2,display_height/2)
-	pygame.display.update()
-	time.sleep(2)
+	while reset > -1:
+		gameDisplay.fill(white)
+		try_again_counter(reset,score)
+		time.sleep(1)
+		reset-=1
+		pygame.display.update()
 	intro()
 	gameloop() #for restart the game
 	
 def gameloop():
 	#pygame.mixer.Sound.stop()
-	pygame.mixer.music.play(-1)
-	bg_x1 = (display_width/2)-(360/2)
-	bg_x2 = (display_width/2)-(360/2)
+	#pygame.mixer.music.play(-1)
+	bg_x1 = 0
+	bg_x2 = 0
 	bg_y1 = 0
 	bg_y2 = -600
 	bg_speed = 6
@@ -149,10 +164,11 @@ def gameloop():
 				quit()
 			
 			if event.type == pygame.KEYDOWN:
+				#Here we can put the camera results
 				if event.key == pygame.K_LEFT:
-					car_x_change = -0.9
+					car_x_change = -1.5
 				elif event.key == pygame.K_RIGHT:
-					car_x_change = 0.9
+					car_x_change = 1.5
 				
 					
 			if event.type == pygame.KEYUP:
@@ -163,28 +179,23 @@ def gameloop():
 		car_x+=car_x_change
 		
 		if car_x > road_end_x-car_width:
-			crash(car_x,car_y)
+			crash(car_x,car_y,count)
 		if car_x < road_start_x:
-			crash(car_x-car_width,car_y)
+			crash(car_x-car_width,car_y,count)
 		
 		
-		if car_y < thing_starty + thingh:
-			if car_x >= thing_startx and car_x <= thing_startx+thingw:
-				crash(car_x-25,car_y-car_height/2)
-			if car_x+car_width >= thing_startx and car_x+car_width <= thing_startx+thingw:
-				crash(car_x,car_y-car_height/2)
+		if car_y < thing_starty + thingh-25:
+			if car_x >= thing_startx+10 and car_x <= thing_startx+thingw-10:
+				#Left Crash
+				crash(car_x-25,car_y-car_height/2,count)
+			if car_x+car_width >= thing_startx-10 and car_x+car_width <= thing_startx+thingw+10:
+			 	#Right Crash
+			 	crash(car_x,car_y-car_height/2,count)
 		
 			
-		
-		
-		
-		
-		gameDisplay.fill(green) #display white background
-		
+				
 		gameDisplay.blit(bgImg,(bg_x1,bg_y1))
-		gameDisplay.blit(bgImg,(bg_x2,bg_y2))
-		gameDisplay.blit(svs,(10,(display_height/2)-100))
-		gameDisplay.blit(svs,(display_width-200-10,(display_height/2)-100))
+		gameDisplay.blit(bgImg2,(bg_x2,bg_y2))
 		car(car_x,car_y) #display car
 		draw_things(thing_startx,thing_starty,car2Img)
 		highscore(count)
