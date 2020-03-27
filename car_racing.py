@@ -1,10 +1,7 @@
 import pygame
 import time
 import random
-import cv2
-import numpy as np
 
-camera = cv2.VideoCapture(-1)
 
 pygame.init()
 
@@ -72,9 +69,6 @@ def intro():
 		message_display("Go",40,menu1_x+menu_width/2,menu1_y+menu_height/2)
 		message_display("Exit",40,menu2_x+menu_width/2,menu2_y+menu_height/2)
 
-
-
-
 		pygame.display.update()
 		clock.tick(50)
 
@@ -114,9 +108,6 @@ def message_display(text,size,x,y):
 	text_surface , text_rectangle = text_objects(text,font)
 	text_rectangle.center =(x,y)
 	gameDisplay.blit(text_surface,text_rectangle)
-	
-	
-	
 	
 def crash(x,y,score):
 	reset = 3
