@@ -1,8 +1,13 @@
 import pygame
 import time
-import random 
+import random
+import cv2
+import numpy as np
+
+camera = cv2.VideoCapture(-1)
 
 pygame.init()
+
 display_width = 800
 display_height = 600
 
@@ -66,7 +71,10 @@ def intro():
 	
 		message_display("Go",40,menu1_x+menu_width/2,menu1_y+menu_height/2)
 		message_display("Exit",40,menu2_x+menu_width/2,menu2_y+menu_height/2)
-		
+
+
+
+
 		pygame.display.update()
 		clock.tick(50)
 
@@ -191,11 +199,13 @@ def gameloop():
 			if car_x+car_width >= thing_startx-10 and car_x+car_width <= thing_startx+thingw+10:
 			 	#Right Crash
 			 	crash(car_x,car_y-car_height/2,count)
-		
-			
+
+
 				
 		gameDisplay.blit(bgImg,(bg_x1,bg_y1))
 		gameDisplay.blit(bgImg2,(bg_x2,bg_y2))
+
+
 		car(car_x,car_y) #display car
 		draw_things(thing_startx,thing_starty,car2Img)
 		highscore(count)
@@ -217,12 +227,15 @@ def gameloop():
 			
 		if bg_y2 >= display_height:
 			bg_y2 = -600
-			
-		
-		
+
+
+
 		pygame.display.update() # update the screen
 		clock.tick(128) # frame per sec
-intro()		
+
+intro()
+
 gameloop()	
+
 #this is not yet completed there are many changes required to improve this game
 #By_Sumit_Patidar
