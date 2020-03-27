@@ -53,7 +53,7 @@ while True:
         maskRedBitWise = cv2.bitwise_and(frame,frame,mask=maskRed)
         cv2.imshow('Mascara Roja -Color original', maskRedBitWise)
 
-        #cv2.imshow('Frame',np.hstack([frame,frameHSV]))
+        cv2.imshow('Frame',np.hstack([frame,frameHSV]))
         ##Presionando la tecla 'S' salimos
         if cv2.waitKey(1) & 0xFF == ord('s'):
             break
