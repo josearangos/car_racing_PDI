@@ -36,7 +36,8 @@ crash_img = pygame.image.load("assets/crash.png")
 cap =cv2.VideoCapture(2) # Es la camara del celular
 
 cordeX,cordeY = 0,0
-
+car_x_change = 0
+font = cv2.FONT_HERSHEY_SIMPLEX
 def camera():
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
@@ -48,6 +49,7 @@ def camera():
 
 
 def pointCoordenates(frame):
+    global cordeX, cordeY
     azulBajo = np.array([100, 100, 20])
     azulAlto = np.array([125, 255, 255])
     frameHSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
@@ -65,7 +67,7 @@ def pointCoordenates(frame):
     # Como se dibujan multiples contornos, solo seleccionaremos los que cumplan cierta area.
     for contor in contornos:
         area = cv2.contourArea(contor)
-        if area > 3000:
+        if area > 700:
             # Buscamos las coordenadas del centro
             centros = cv2.moments(contor)
             if (centros["m00"] == 0): centros["m00"] = 1
@@ -82,13 +84,35 @@ def pointCoordenates(frame):
             cv2.drawContours(frame, [contorSuavi], 0, (255, 0, 0), 3)
 
 def openCamera():
+    global car_x_change,cordeX,cordeY
     while (cap.isOpened()):
         ret, frame = cap.read()
         frame = cv2.flip(frame, 1)
         if ret == True:
+            fil = frame.shape[0]
+            col = frame.shape[1]
+            x_medio_derecha = int((col + 60) / 2)
+            x_medio_izquierda = int((col - 60) / 2)
+            cordeX = int(col / 2)
+            cordeY = int(fil / 2)
+            # Linea derecha
+            cv2.line(frame, (x_medio_derecha, 0), (x_medio_derecha, fil), (0, 255, 0), 2)
+            # Linea izquierda
+            cv2.line(frame, (x_medio_izquierda, 0), (x_medio_izquierda, fil), (0, 255, 0), 2)
             pointCoordenates(frame)
+
+            # izquierda
+            if (cordeX > 0 and cordeX < x_medio_izquierda):
+                car_x_change = -0.5
+            if (cordeX >= x_medio_izquierda and cordeX <= x_medio_derecha):
+                car_x_change = 0
+            if (cordeX > x_medio_derecha and cordeX < col):
+                car_x_change = 0.5
+
+            cv2.putText(frame, str(car_x_change), (20, 20), font, 0.75, (0, 0, 255), 1, cv2.LINE_AA)
+            cv2.putText(frame, 'CordX: ' + str(cordeX), (20, 60), font, 0.75, (0, 0, 255), 1, cv2.LINE_AA)
+
             cv2.imshow('Video', frame)
-            cordeX = cordeX +1
             if cv2.waitKey(1) & 0xFF == ord('s'):
                 break
     cap.release()
@@ -205,6 +229,7 @@ def crash(x,y,score):
 
 
 def gameloop():
+    global car_x_change
     # pygame.mixer.Sound.stop()
     # pygame.mixer.music.play(-1)
     bg_x1 = 0
@@ -223,7 +248,7 @@ def gameloop():
     thing_starty = -600
     thingw = 50
     thingh = 100
-    thing_speed = 3
+    thing_speed = 1
     count = 0
     gameExit = False
 
@@ -267,12 +292,10 @@ def gameloop():
         car(car_x, car_y)  # display car
         draw_things(thing_startx, thing_starty, car2Img)
         highscore(count)
-        print(cordeX)
-        coordenadas()
         count += 1
 
         # Update Speed Obstacle Cars
-        thing_speed += 0.003
+        thing_speed += 0.000
         thing_starty += thing_speed
 
         if thing_starty > display_height:
@@ -291,12 +314,10 @@ def gameloop():
         pygame.display.update()  # update the screen
         clock.tick(128)  # frame per sec
 
-
 def coordenadas():
     font = pygame.font.SysFont(None, 60)
     text = font.render("cordeX : "+ str(cordeX) +" cordeY: "+ str(cordeY) , True, black)
     gameDisplay.blit(text, (0, 50))
-
 
 def main():
     intro()
