@@ -23,3 +23,4 @@ Car_racing game using pygame in python and opencv
 3) enjoy the game :)
 
 ## Example 
+![](assets/demo_car_racing.gif)

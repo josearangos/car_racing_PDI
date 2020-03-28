@@ -1,112 +1,128 @@
-import cv2
-import numpy as  np
-import pygame
-import time
-import random
-import threading
+#----------Conceptos básicos de PDI----------------------------
+#----------Por: Jose Alberto Arango Sánchez jose.arangos@udea.edu.co CC 1017246338 ----------------------------
+#-----------Leon Dario Arango Amaya leon.arango@udea.edu.co CC        ----------------------------------------
+#-----------Curso Básico de Procesamiento de Imágenes y Visión Artificial------------------------------------
+#---------- 13 Abril de 2020 --------------------------------------------------------------------------------
 
-pygame.init()
-display_width = 800
-display_height = 600
+#--------------------------------------------------------------------------------------------------------------
+# 1. IMPORTANDO LAS LIBRERÍAS NECESARIAS
+#--------------------------------------------------------------------------------------------------------------
 
+import cv2 #Opencv
+import numpy as  np #Numpy, usada para calculos matriciales
+import pygame #Librería usada para crear el entorno de juego
+import time #Librería usada para el manejo del tiempo
+import random #Librería usada para generar valores random
+import threading #Librería usada para el manejo de hilos
+#--------------------------------------------------------------------------------------------------------------
+# 2. INICIALIZAR LAS VARIABLES
+#--------------------------------------------------------------------------------------------------------------
+pygame.init() #Inicializamos la librería pygame
+display_width = 800 #Dimensiones de campo de juego
+display_height = 600 #Dimensiones de campo de juego
 black = (0, 0, 0)
 white = (255, 255, 255)
 green = (0, 255, 0)
 red = (255, 0, 0)
 blue = (0, 0, 255)
+car_width = 50 #Dimension del carro
+car_height = 100 #Dimensi
+pygame.mixer.music.load("assets/Hurry_Up.mp3")
 
-car_width = 50
-car_height = 100
-# pygame.mixer.music.load("assets/Hurry_Up.mp3")
-gameDisplay = pygame.display.set_mode((display_width, display_height))
 
-pygame.display.set_caption("Car Racing")
-clock = pygame.time.Clock()
+gameDisplay = pygame.display.set_mode((display_width, display_height)) #Definimos las dimensiones del lienzo de juego
+pygame.display.set_caption("Car Racing") # Definimos el titulo de la ventana de juego
+clock = pygame.time.Clock() #Creamos un objeto tipo reloj, para administrar los tiempos dentro del juego
+carImg = pygame.image.load("assets/car3.png")  # cargamos los carros del juego
+car2Img = pygame.image.load("assets/car2.png")  # cargamos los carros del juego
+bgImg = pygame.image.load("assets/back2.jpg")  #Cargamos la pista de juego
+bgImg2 = pygame.image.load("assets/back3.jpg") #Cargamos la pista de juego
+crash_img = pygame.image.load("assets/crash.png")  # Imagen de crash
+cap = cv2.VideoCapture(0) # Es la camara por defecto del ordenador.
+cordeX, cordeY = 0, 0 #Coordenadas del objeto a detectar por su color
+car_x_change = 0 #Dirección en la que se mueve el vehiculo deacuerdo a la pocision donde se encuentre
+font = cv2.FONT_HERSHEY_SIMPLEX #tipo de fuente usada para el texto en la pantalla de la imagen
+#--------------------------------------------------------------------------------------------------------------
+# 3. MÉTODOS DE PDI
+#--------------------------------------------------------------------------------------------------------------
 
-##Cargar en otro momento
-carImg = pygame.image.load("assets/car3.png")  # load the car image
-car2Img = pygame.image.load("assets/car2.png")
-bgImg = pygame.image.load("assets/back2.jpg")
-bgImg2 = pygame.image.load("assets/back3.jpg")
-crash_img = pygame.image.load("assets/crash.png")
-
-cap = cv2.VideoCapture(0)  # Es la camara del celular
-
-cordeX, cordeY = 0, 0
-car_x_change = 0
-font = cv2.FONT_HERSHEY_SIMPLEX
-
+# El siguiente método se encarga de graficar el punto medio donde se encuentra una bola de color azul la cual es la encargada de definir la dirección del carro
 def pointCoordenates(frame):
-    global cordeX, cordeY
+    global cordeX, cordeY   #Coordenadas del objeto a detectar por su color
+    #Definimos los rangos del color a detectar
     azulBajo = np.array([100, 100, 20])
     azulAlto = np.array([125, 255, 255])
+    #Convertimos la imagen de BGR a HSV que es el modelo de coordenadas usado
     frameHSV = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     # Aplicamos la mascara
     mask = cv2.inRange(frameHSV, azulBajo, azulAlto)
     # Obtenemos los contornos de las partes blancas y los dibujamos
     contornos, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    """
-    Dibujamos todos los contornos, con 
-    -1 indicamos que dibuje todos los encontrados
-    (255,0,0) indica que va dibujar los contornos azules BGR
-    3 indica el grosor de la linea a dibujar.
-    """
-    # cv2.drawContours(frame, contornos, -1, (255,0,0),3)
     # Como se dibujan multiples contornos, solo seleccionaremos los que cumplan cierta area.
-    for contor in contornos:
-        area = cv2.contourArea(contor)
-        if area > 700:
+    for contor in contornos: #Recorremos todos los contornos azules encontrados
+        area = cv2.contourArea(contor) #Obtenemos el area de los contornos
+        if area > 700: #Solo los mayores a 700
             # Buscamos las coordenadas del centro
             centros = cv2.moments(contor)
             if (centros["m00"] == 0): centros["m00"] = 1
             x = int(centros["m10"] / centros["m00"])
             y = int(centros["m01"] / centros["m00"])
-            cordeX = x
-            cordeY = y
-            # 7 indica el radio
-            cv2.circle(frame, (x, y), 7, (0, 255, 0), -1)
-            font = cv2.FONT_HERSHEY_SIMPLEX
+            cordeX = x # coordenada x del contorno
+            cordeY = y # coordenada y del contorno
+            # Dibujamos un circulo con las coordenadas del contorno
+            cv2.circle(frame, (x, y), 7, (0, 255, 0), -1) # 7 es el radio del circulo
+            # Mostramos en pantalla las coordenadas
             cv2.putText(frame, '{},{}'.format(x, y), (x + 10, y), font, 0.75, (0, 255, 0), 1, cv2.LINE_AA)
             # Luego de eliminar los contorno menores a cierta area, vamos a suavizar los contornos
-            contorSuavi = cv2.convexHull(contor)
-            cv2.drawContours(frame, [contorSuavi], 0, (255, 0, 0), 3)
+            contorSuavi = cv2.convexHull(contor) #suavizamos los contornos
+            cv2.drawContours(frame, [contorSuavi], 0, (255, 0, 0), 3) #dibujamos los contornos
 
+#El siguiente método se encarga de leer los frames de la camara y realizar el preprocesado para saber la dirección del carro
 def openCamera():
-    global car_x_change,cordeX,cordeY
-    while (cap.isOpened()):
-        ret, frame = cap.read()
-        frame = cv2.flip(frame, 1)
-        if ret == True:
-            fil = frame.shape[0]
-            col = frame.shape[1]
+    global car_x_change,cordeX,cordeY   #Coordenadas del objeto a detectar por su color
+
+    while (cap.isOpened()): #Mientras la camara se encuentre abierta se realizará la lectura de los frames
+        ret, frame = cap.read() # capturamos un frame
+        frame = cv2.flip(frame, 1) #Usamos flip 1 para girar el frame horizontalmente
+        if ret == True: # Si se logró leer con exito un frame realizamos el preprocesado.
+            #Creamos el volante
+
+            cv2.circle(frame,(318,382),170,(0,255,0),2)
+
+            fil = frame.shape[0]  #capturamos las dimensiones de l frame
+            col = frame.shape[1]  #capturamos las dimensiones de l frame
+            # las coordenas en x de las lineas usadas para los umbrales
             x_medio_derecha = int((col + 60) / 2)
             x_medio_izquierda = int((col - 60) / 2)
-            cordeX = int(col / 2)
-            cordeY = int(fil / 2)
+            cordeX = int(col / 2) #inicializamos las cordenas de la bola
+            cordeY = int(fil / 2) #inicializamos las cordenas de la bola
+            # creamos dos lineas, las cuales nos servirán para definir los segmentos donde se encuentre la bola azul
             # Linea derecha
             cv2.line(frame, (x_medio_derecha, 0), (x_medio_derecha, fil), (0, 255, 0), 2)
             # Linea izquierda
             cv2.line(frame, (x_medio_izquierda, 0), (x_medio_izquierda, fil), (0, 255, 0), 2)
-            pointCoordenates(frame)
+            pointCoordenates(frame) #Hacemos uso de la función documentada anteriormente
+            # Deacuerdo a la coordenada en X donde se encuentre la bolita a detectar, realizamos el moviemto del vehiculo
             # izquierda
             if (cordeX > 0 and cordeX < x_medio_izquierda):
-                car_x_change = -0.5
+                car_x_change = -0.5 #indica que la bolita se encuentra en el segmento izquierdo y por lo tanto el usuario desea mover el vehiculo en esta dirección
             if (cordeX >= x_medio_izquierda and cordeX <= x_medio_derecha):
-                car_x_change = 0
-            if (cordeX > x_medio_derecha and cordeX < col):
+                car_x_change = 0 #indica que la bolita se encuentra en el segmento centro y por lo tanto el usuario desea no mover el vehiculo en ninguna dirección
+            if (cordeX > x_medio_derecha and cordeX < col): #indica que la bolita se encuentra en el segmento derecho y por lo tanto el usuario desea mover el vehiculo en esta dirección
                 car_x_change = 0.5
-
-            cv2.putText(frame, str(car_x_change), (20, 20), font, 0.75, (0, 0, 255), 1, cv2.LINE_AA)
-            cv2.putText(frame, 'CordX: ' + str(cordeX), (20, 60), font, 0.75, (0, 0, 255), 1, cv2.LINE_AA)
-
-            cv2.imshow('Video', frame)
-            if cv2.waitKey(1) & 0xFF == ord('s'):
+            cv2.imshow('Car_Racing_PDI', frame) #Mostramos la imagen
+            if cv2.waitKey(1) & 0xFF == ord('s'): # Cuando se presione la tecla 'S', se cierra la pestaña
                 break
-    cap.release()
-    cv2.destroyAllWindows()
+    cap.release() #Finalizamos la lectura de la camara
+    cv2.destroyAllWindows() #Destruimos las pestañas
+
+#--------------------------------------------------------------------------------------------------------------
+# 4. MÉTODOS DEL JUEGO
+#--------------------------------------------------------------------------------------------------------------
+
+
 
 def intro():
-    # pygame.mixr.Sound.play(start_music)
     intro = True
     menu1_x = 200
     menu1_y = 400
@@ -190,30 +206,27 @@ def message_display(text, size, x, y):
     gameDisplay.blit(text_surface, text_rectangle)
 
 def crash(x,y,score):
-	reset = 3
-	#Stop Music
-	pygame.mixer.music.stop()
+    reset = 3
+    #Stop Music
+    #this put the crach img in the cash car position
+    gameDisplay.blit(crash_img,(x,y))
+    # Put Message, update display, and wait
+    message_display("You Crashed",115,display_width/2,display_height/2)
+    pygame.display.update()
+    time.sleep(3)
+    while reset > -1:
+        gameDisplay.fill(white)
+        try_again_counter(reset,score)
+        time.sleep(1)
+        reset-=1
+        pygame.display.update()
+    intro()
+    gameloop() #for restart the game
 
-	#this put the crach img in the cash car position
-	gameDisplay.blit(crash_img,(x,y))
-
-	#Put Message, update display, and wait
-	message_display("You Crashed",115,display_width/2,display_height/2)
-	pygame.display.update()
-	time.sleep(3)
-
-	while reset > -1:
-		gameDisplay.fill(white)
-		try_again_counter(reset,score)
-		time.sleep(1)
-		reset-=1
-		pygame.display.update()
-	intro()
-	gameloop() #for restart the game
 def gameloop():
     global car_x_change
-    # pygame.mixer.Sound.stop()
-    # pygame.mixer.music.play(-1)
+    pygame.mixer.stop()
+    pygame.mixer.music.play(-1)
     bg_x1 = 0
     bg_x2 = 0
     bg_y1 = 0
@@ -296,6 +309,10 @@ def gameloop():
         pygame.display.update()  # update the screen
         clock.tick(128)  # frame per sec
 
+#--------------------------------------------------------------------------------------------------------------
+# . HILOS
+#--------------------------------------------------------------------------------------------------------------
+#Debido a que la camara debe funcionar de manera independiente se creo un hilo para tal fin usando la librería mencionada anteriormente
 threadCamera = threading.Thread(target=openCamera)
 threadCamera.start()
 
