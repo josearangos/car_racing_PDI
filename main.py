@@ -1,14 +1,7 @@
-import sys
-import threading
-from  car_racing import CAR_GAME
+import car_racing as car
 
 def main():
-    car_racing = CAR_GAME()
-    car_racing.intro()
-    threadCamera = threading.Thread(target=car_racing.openCamera())
-    threadCamera.start()
-    car_racing.gameloop()
-
+    car.intro()
+    car.gameloop()
 if __name__ == "__main__":
     main()
-
