@@ -1,23 +1,3 @@
-<<<<<<< HEAD
-# car_racing_PDI
-
-
-car_racing game using pygame in python
-steps to run:
-
-1. install requirements:
-
-- pip install -r requirements.txt
-
-2. copy all the file in a specific foder
-3. run the car_racing.py file using python(example: python car_racing.py)
-3)enjoy the game :)
-
-
-
-
-# car_racing_PDI
-=======
 #   Car_Racing
 
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
@@ -44,4 +24,3 @@ Car_racing game using pygame in python and opencv
 
 ## Example 
 ![](assets/demo_car_racing.gif)
->>>>>>> game_refactor
