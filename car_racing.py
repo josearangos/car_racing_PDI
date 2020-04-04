@@ -245,11 +245,13 @@ def gameloop():
     thingh = 100
     thing_speed = 1
     count = 0
+    pause = False
     gameExit = False
 
     while not gameExit:
 
         for event in pygame.event.get():
+
             if event.type == pygame.QUIT:
                 gameExit = True
                 pygame.quit()
@@ -261,10 +263,30 @@ def gameloop():
                     car_x_change = -1.5
                 elif event.key == pygame.K_RIGHT:
                     car_x_change = 1.5
+                elif event.key == pygame.K_SPACE:
+                    pause = True
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                     car_x_change = 0
+
+        while pause == True:
+            message_display("Game Paused",115,display_width/2,display_height/2)
+            pygame.display.update()
+            time.sleep(0.5)
+            gameDisplay.blit(bgImg, (bg_x1, bg_y1))
+            gameDisplay.blit(bgImg2, (bg_x2, bg_y2))
+            car(car_x, car_y)  # display car
+            draw_things(thing_startx, thing_starty, car2Img)
+            highscore(count)
+            pygame.display.update()
+            time.sleep(0.5)
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        print("Continue...")
+                        pause = False
+                        
 
         car_x += car_x_change
 
