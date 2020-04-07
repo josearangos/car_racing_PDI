@@ -109,11 +109,11 @@ def openCamera():
             # Deacuerdo a la coordenada en X donde se encuentre la bolita a detectar, realizamos el moviemto del vehiculo
             # izquierda
             if (cordeX > 0 and cordeX < x_medio_izquierda):
-                car_x_change = -0.5 #indica que la bolita se encuentra en el segmento izquierdo y por lo tanto el usuario desea mover el vehiculo en esta dirección
+                car_x_change = -0.7 #indica que la bolita se encuentra en el segmento izquierdo y por lo tanto el usuario desea mover el vehiculo en esta dirección
             if (cordeX >= x_medio_izquierda and cordeX <= x_medio_derecha):
                 car_x_change = 0 #indica que la bolita se encuentra en el segmento centro y por lo tanto el usuario desea no mover el vehiculo en ninguna dirección
             if (cordeX > x_medio_derecha and cordeX < col): #indica que la bolita se encuentra en el segmento derecho y por lo tanto el usuario desea mover el vehiculo en esta dirección
-                car_x_change = 0.5
+                car_x_change = 0.7
             cv2.imshow('Car_Racing_PDI', frame) #Mostramos la imagen
             if cv2.waitKey(1) & 0xFF == ord('s'): # Cuando se presione la tecla 'S', se cierra la pestaña
                 break
@@ -218,12 +218,14 @@ def crash(x,y,score):
     message_display("You Crashed",115,display_width/2,display_height/2)
     pygame.display.update()
     time.sleep(3)
-    while reset > -1:
+
+    while reset >= 0:
         gameDisplay.fill(white)
         try_again_counter(reset,score)
-        reset-=1
         pygame.display.update()
         time.sleep(1)
+        reset-=1
+    time.sleep(0.5)
     intro()
     gameloop() #for restart the game
 
@@ -304,8 +306,8 @@ def gameloop():
         if car_y < thing_starty + thingh - 25:
             if car_x >= thing_startx + 10 and car_x <= thing_startx + thingw - 10:
                 # Left Crash
-                crash(car_x - 25, car_y - car_height / 2, count)
-            if car_x + car_width >= thing_startx - 10 and car_x + car_width <= thing_startx + thingw + 10:
+                crash(car_x - car_width /2, car_y - car_height / 2, count)
+            if car_x + car_width >= thing_startx + 13 and car_x + car_width <= thing_startx + thingw + 10:
                 # Right Crash
                 crash(car_x, car_y - car_height / 2, count)
 
@@ -318,7 +320,7 @@ def gameloop():
         count += 1
 
         # Update Speed Obstacle Cars
-        thing_speed += 0.000
+        thing_speed += 0.001
         thing_starty += thing_speed
 
         if thing_starty > display_height:
