@@ -1,4 +1,4 @@
-import car_racing as car
+import py.car_racing as car
 
 def main():
     car.intro()

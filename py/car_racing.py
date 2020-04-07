@@ -27,21 +27,21 @@ red = (255, 67, 34)
 blue = (77, 77, 77)
 car_width = 50 #Dimension del carro
 car_height = 100 #Dimension del carro
-crash_sound = pygame.mixer.Sound("assets/crash.wav")
-intro_sound = pygame.mixer.Sound("assets/intro.wav")
-start_sound = pygame.mixer.Sound("assets/start.wav")
+crash_sound = pygame.mixer.Sound("./assets/crash.wav")
+intro_sound = pygame.mixer.Sound("./assets/intro.wav")
+start_sound = pygame.mixer.Sound("./assets/start.wav")
 
 
 
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #Definimos las dimensiones del lienzo de juego
 pygame.display.set_caption("Car Racing") # Definimos el titulo de la ventana de juego
 clock = pygame.time.Clock() #Creamos un objeto tipo reloj, para administrar los tiempos dentro del juego
-carImg = pygame.image.load("assets/car3.png")  # cargamos los carros del juego
-car2Img = pygame.image.load("assets/car2.png")  # cargamos los carros del juego
-bgImg = pygame.image.load("assets/back2.jpg")  #Cargamos la pista de juego
-bgImg2 = pygame.image.load("assets/back3.jpg") #Cargamos la pista de juego
-crash_img = pygame.image.load("assets/crash.png")  # Imagen de crash
-background = pygame.image.load("assets/Background.jpg")  # Imagen de crash
+carImg = pygame.image.load("./assets/car3.png")  # cargamos los carros del juego
+car2Img = pygame.image.load("./assets/car2.png")  # cargamos los carros del juego
+bgImg = pygame.image.load("./assets/back2.jpg")  #Cargamos la pista de juego
+bgImg2 = pygame.image.load("./assets/back3.jpg") #Cargamos la pista de juego
+crash_img = pygame.image.load("./assets/crash.png")  # Imagen de crash
+background = pygame.image.load("./assets/Background.jpg")  # Imagen de crash
 cap = cv2.VideoCapture(0) # Es la camara por defecto del ordenador.
 cordeX, cordeY = 0, 0 #Coordenadas del objeto a detectar por su color
 car_x_change = 0 #Dirección en la que se mueve el vehiculo deacuerdo a la pocision donde se encuentre
@@ -206,7 +206,7 @@ def text_objects(text, font):#Botones dle menu
 
 # This functio print buttons
 def message_display(text, size, x, y): #Esta funcion se utiliza para la mayoria de mensajes que muestra el juego
-    font = pygame.font.Font("assets/CaviarDreams.ttf", size)#Fuente
+    font = pygame.font.Font("./assets/CaviarDreams.ttf", size)#Fuente
     text_surface, text_rectangle = text_objects(text, font) #Texto
     text_rectangle.center = (x, y) #Bloque
     gameDisplay.blit(text_surface, text_rectangle) #render
@@ -238,7 +238,7 @@ def gameloop():
     global car_x_change #Variable de cambio para el auto
     pygame.mixer.Sound.play(start_sound) #Sonido de inicio
     pygame.mixer.music.stop()
-    pygame.mixer.music.load("assets/game.mp3")#Musica de fondo
+    pygame.mixer.music.load("./assets/game.mp3")#Musica de fondo
     pygame.mixer.music.play(-1)#Musica de fondo
     #Variables de inicio para el fondo
     bg_x1 = 0
