@@ -1,12 +1,12 @@
 #----------Conceptos básicos de PDI----------------------------
-#----------Por: Jose Alberto Arango Sánchez jose.arangos@udea.edu.co CC 1017246338 ----------------------------
-#-----------Leon Dario Arango Amaya leon.arango@udea.edu.co CC        ----------------------------------------
-#-----------Curso Básico de Procesamiento de Imágenes y Visión Artificial------------------------------------
+#----------Por: Jose Alberto Arango Sánchez jose.arangos@udea.edu.co CC 1017246338 --------------------------
+#-----------Leon Dario Arango Amaya leon.arango@udea.edu.co CC 1044507887 -----------------------------------
+#-----------Curso de Procesamiento Digital de Imágenes ------------------------------------------------------
 #---------- 13 Abril de 2020 --------------------------------------------------------------------------------
 
-#--------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
 # 1. IMPORTANDO LAS LIBRERÍAS NECESARIAS
-#--------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
 
 import cv2 #Opencv
 import numpy as  np #Numpy, usada para calculos matriciales
@@ -14,20 +14,23 @@ import pygame #Librería usada para crear el entorno de juego
 import time #Librería usada para el manejo del tiempo
 import random #Librería usada para generar valores random
 import threading #Librería usada para el manejo de hilos
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 # 2. INICIALIZAR LAS VARIABLES
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 pygame.init() #Inicializamos la librería pygame
 display_width = 800 #Dimensiones de campo de juego
 display_height = 600 #Dimensiones de campo de juego
 black = (0, 0, 0)
 white = (255, 255, 255)
-green = (0, 255, 0)
-red = (255, 0, 0)
-blue = (0, 0, 255)
+green = (44, 215, 223)
+red = (255, 67, 34)
+blue = (77, 77, 77)
 car_width = 50 #Dimension del carro
-car_height = 100 #Dimensi
-pygame.mixer.music.load("assets/Hurry_Up.mp3")
+car_height = 100 #Dimension del carro
+crash_sound = pygame.mixer.Sound("assets/crash.wav")
+intro_sound = pygame.mixer.Sound("assets/intro.wav")
+start_sound = pygame.mixer.Sound("assets/start.wav")
+
 
 
 gameDisplay = pygame.display.set_mode((display_width, display_height)) #Definimos las dimensiones del lienzo de juego
@@ -38,13 +41,14 @@ car2Img = pygame.image.load("assets/car2.png")  # cargamos los carros del juego
 bgImg = pygame.image.load("assets/back2.jpg")  #Cargamos la pista de juego
 bgImg2 = pygame.image.load("assets/back3.jpg") #Cargamos la pista de juego
 crash_img = pygame.image.load("assets/crash.png")  # Imagen de crash
+background = pygame.image.load("assets/background.jpg")  # Imagen de crash
 cap = cv2.VideoCapture(0) # Es la camara por defecto del ordenador.
 cordeX, cordeY = 0, 0 #Coordenadas del objeto a detectar por su color
 car_x_change = 0 #Dirección en la que se mueve el vehiculo deacuerdo a la pocision donde se encuentre
 font = cv2.FONT_HERSHEY_SIMPLEX #tipo de fuente usada para el texto en la pantalla de la imagen
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 # 3. MÉTODOS DE PDI
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 
 # El siguiente método se encarga de graficar el punto medio donde se encuentra una bola de color azul la cual es la encargada de definir la dirección del carro
 def pointCoordenates(frame):
@@ -116,13 +120,15 @@ def openCamera():
     cap.release() #Finalizamos la lectura de la camara
     cv2.destroyAllWindows() #Destruimos las pestañas
 
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 # 4. MÉTODOS DEL JUEGO
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 
 
 
 def intro():
+    pygame.mixer.Sound.play(intro_sound)
+    intro_sound.set_volume(0.1)
     intro = True
     menu1_x = 200
     menu1_y = 400
@@ -137,12 +143,7 @@ def intro():
                 quit()
         pygame.display.set_icon(carImg)
 
-        pygame.draw.rect(gameDisplay, black, (200, 400, 100, 50))
-        pygame.draw.rect(gameDisplay, black, (500, 400, 100, 50))
-
-        gameDisplay.fill(white)
-        message_display("CAR RACING", 100, display_width / 2, display_height / 2)
-        gameDisplay.blit(carImg, ((display_width / 2) - 100, 10))
+        gameDisplay.blit(background, (0, 0))
         pygame.draw.rect(gameDisplay, green, (200, 400, 100, 50))
         pygame.draw.rect(gameDisplay, red, (500, 400, 100, 50))
 
@@ -152,6 +153,7 @@ def intro():
         if menu1_x < mouse[0] < menu1_x + menu_width and menu1_y < mouse[1] < menu1_y + menu_height:
             pygame.draw.rect(gameDisplay, blue, (200, 400, 100, 50))
             if click[0] == 1:
+                pygame.mixer.Sound.stop(intro_sound)
                 intro = False
         if menu2_x < mouse[0] < menu2_x + menu_width and menu2_y < mouse[1] < menu2_y + menu_height:
             pygame.draw.rect(gameDisplay, blue, (500, 400, 100, 50))
@@ -206,6 +208,8 @@ def message_display(text, size, x, y):
     gameDisplay.blit(text_surface, text_rectangle)
 
 def crash(x,y,score):
+    pygame.mixer.Sound.play(crash_sound)
+    pygame.mixer.music.stop()
     reset = 3
     #Stop Music
     #this put the crach img in the cash car position
@@ -217,15 +221,17 @@ def crash(x,y,score):
     while reset > -1:
         gameDisplay.fill(white)
         try_again_counter(reset,score)
-        time.sleep(1)
         reset-=1
         pygame.display.update()
+        time.sleep(1)
     intro()
     gameloop() #for restart the game
 
 def gameloop():
     global car_x_change
-    pygame.mixer.stop()
+    pygame.mixer.Sound.play(start_sound)
+    pygame.mixer.music.stop()
+    pygame.mixer.music.load("assets/game.mp3")
     pygame.mixer.music.play(-1)
     bg_x1 = 0
     bg_x2 = 0
@@ -331,9 +337,9 @@ def gameloop():
         pygame.display.update()  # update the screen
         clock.tick(128)  # frame per sec
 
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 # . HILOS
-#--------------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 #Debido a que la camara debe funcionar de manera independiente se creo un hilo para tal fin usando la librería mencionada anteriormente
 threadCamera = threading.Thread(target=openCamera)
 threadCamera.start()
