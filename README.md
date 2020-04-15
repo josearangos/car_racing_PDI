@@ -24,3 +24,13 @@ Car_racing game using pygame in python and opencv
 
 ## Example 
 ![](assets/demo_car_racing.gif)
+
+## Tutorial video 
+
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/YOUTUBE_VIDEO_ID_HERE/0.jpg)](https://www.youtube.com/watch?v=CxTXUONw6AA&t=16s)
+
+## Slides
+
+
+
+
