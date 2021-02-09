@@ -1,0 +1,34 @@
+from infraestructure.db.conexion import Conexion
+from entities.alumnos import Alumnos
+from entities.graduados import Graduados
+from pyspark.sql.functions import isnan, when, count, col, countDistinct, lit,collect_set,concat_ws,round
+import pyspark.sql.functions as F
+from pyspark.sql.types import IntegerType
+from pyspark.sql.window import Window
+
+
+conn = Conexion()
+a = Alumnos(conn)
+
+grad = Graduados(conn)
+
+historico_grad=grad.historico_graduados_posgrado.alias('historico_grad')
+
+
+window_cumsum_cubierto = (Window.partitionBy('id_unico', 'codigoprog_matri')
+                   .orderBy('semestre_matri')
+                   .rangeBetween(Window.unboundedPreceding, 0)
+                  )
+
+
+df_acumulados_creditos = (historico_grad
+                          .withColumn('acumulado_credaprob',F.sum('credaprob_matri').over(window_cumsum_cubierto))
+                          .withColumn('acumulado_credmatri',F.sum('credmatr_matri').over(window_cumsum_cubierto))        
+                          .withColumn('ratio_credaprob',col('acumulado_credaprob')/col('credgrado_grad'))
+                          .withColumn('ratio_credmatri',col('acumulado_credmatri')/col('credgrado_grad'))
+                          .withColumn('ratio_credapro_matri',col('acumulado_credaprob')/col('acumulado_credmatri'))
+                          .withColumn('ratio_credapro_matri_semestre',col('credaprob_matri')/col('credmatr_matri'))
+)
+
+
+

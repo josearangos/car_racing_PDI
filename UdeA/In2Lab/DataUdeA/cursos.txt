@@ -1,0 +1,39 @@
+from infraestructure.db.conexion import Conexion
+from entities.alumnos import Alumnos
+from entities.graduados import Graduados
+from pyspark.sql.functions import isnan, when, count, col, countDistinct, lit
+import pyspark.sql.functions as F
+from pyspark.sql.types import IntegerType
+from pyspark.sql.window import Window
+
+
+
+window_id_prog_semestreini = (Window
+                              .partitionBy('id_unico', 'codigoprog_matri', 'semestreinic_grad')
+                              .orderBy('codigoprog_matri')
+                             )
+
+
+conn = Conexion()
+a = Alumnos(conn)
+
+
+grad = Graduados(conn)
+
+education_previa = grad.hv_alumno.groupBy('id_unico', 'enfanotitulo_educont_dtohv', 'enfactividad_educont_dtohv').count()
+
+graduados = (grad.historico_graduados_posgrado.groupBy('id_unico', 'codigoprog_matri', 'semestreinic_grad')
+             .count()
+             .join(education_previa, 'id_unico', 'inner')
+             .select('id_unico', 'codigoprog_matri', 'semestreinic_grad', 'enfanotitulo_educont_dtohv', 'enfactividad_educont_dtohv')
+             .withColumn('ano_ed_continua', F.substring(col('enfanotitulo_educont_dtohv'), 1, 4).cast( IntegerType() )  )
+             .withColumn('semestreinic_grad', F.substring( col('semestreinic_grad'), 1, 4 ).cast( IntegerType() ) )
+             .withColumn('nro_cursos', F.size(F.collect_set('enfactividad_educont_dtohv').over(window_id_prog_semestreini)) )
+             .withColumn('ultimo_curso', F.max(col('ano_ed_continua')).over(window_id_prog_semestreini) )
+             .withColumn('tiempo_entre_ultimo_curso_inicio_pos',(col('semestreinic_grad')-col('ultimo_curso'))*12)
+             .withColumn('tiempo_entre_ultimo_curso_inicio_pos',when(col('tiempo_entre_ultimo_curso_inicio_pos')==0,6).otherwise(col('tiempo_entre_ultimo_curso_inicio_pos')))
+             .where(col('ultimo_curso') <= col('semestreinic_grad') )
+            )
+
+
+

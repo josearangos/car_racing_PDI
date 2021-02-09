@@ -1,0 +1,46 @@
+from infraestructure.db.conexion import Conexion
+from entities.alumnos import Alumnos
+from entities.graduados import Graduados
+from pyspark.sql.functions import isnan, when, count, col, countDistinct, lit,collect_set,concat_ws,round
+import pyspark.sql.functions as F
+from pyspark.sql.types import IntegerType
+from pyspark.sql.window import Window
+
+
+conn = Conexion()
+a = Alumnos(conn)
+
+grad = Graduados(conn)
+
+historico_grad=grad.historico_graduados_posgrado.alias('historico_grad')
+
+
+window_cumsum_cubierto_semestre = (Window.partitionBy('id_unico', 'codigoprog_matri')
+                   .orderBy('semestre_matri')
+                   .rangeBetween(Window.unboundedPreceding, 0)
+                  )
+
+notas = conn.get_table('tabla_notas_materias')
+
+notas_filt = notas.select("id_unico","semestre_mater","codigoprog_mater","materia_mater","notadefin_mater").filter("semestre_mater > 20071").orderBy("semestre_mater")
+
+
+notas_filt = notas_filt.withColumnRenamed("semestre_mater","semestre_matri")
+notas_filt = notas_filt.withColumnRenamed("codigoprog_mater","codigoprog_matri")
+
+
+notas_graduados = (
+    historico_grad.groupBy('id_unico', 'semestre_matri','codigoprog_matri')
+    .count()
+    .join(notas_filt,["id_unico","semestre_matri","codigoprog_matri"])
+    .select("id_unico","semestre_matri","codigoprog_matri","notadefin_mater","count")
+    .withColumn('nro_materias_matri',F.sum("count").over(window_cumsum_cubierto_semestre))
+    .withColumn('apro',when(col('notadefin_mater') > 3.5,1).otherwise(0))
+    .withColumn('repro',when(col('notadefin_mater') < 3.5,1).otherwise(0))
+    .withColumn('nro_materias_apro',F.sum("apro").over(window_cumsum_cubierto_semestre))
+    .withColumn('nro_materias_repro',F.sum("repro").over(window_cumsum_cubierto_semestre))
+    .orderBy("semestre_matri")    
+)
+
+notas_graduados.table()
+

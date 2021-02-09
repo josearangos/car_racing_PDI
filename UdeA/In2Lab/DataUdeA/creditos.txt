@@ -1,0 +1,58 @@
+grad_programa = (historico_grad.groupBy('id_unico', 'semestre_matri','codigoprog_matri')
+                 .count()
+                 .join(programas,'codigoprog_matri','inner')
+                 .select('id_unico','semestre_matri','codigoprog_matri','creditosgrado')
+                )
+
+
+
+grad_programa.limit(20).table()
+
+notas = conn.get_table('tabla_notas_materias')
+
+materias = conn.get_table('materias_programa')
+
+notas = notas.withColumnRenamed('materia_mater','materia')
+
+notas_creditos = (notas
+                  .join(materias,'materia','left_outer')
+                  .where(col('semestre_mater')>20071)
+                  .select("id_unico","semestre_mater","creditos",'materia','notadefin_mater')
+                 )
+
+
+notas_creditos = (notas_creditos.groupBy('id_unico','semestre_matri','materia')
+              .agg(
+                  collect_set('creditos').alias('creditos'),
+                  collect_set('notadefin_mater').alias('notadefin_mater')
+              )
+              .withColumn('creditos',concat_ws(',','creditos'))
+              .withColumn('notadefin_mater',concat_ws(',','notadefin_mater'))
+              ).orderBy('semestre_matri')
+
+
+notas_creditos = notas_creditos.withColumnRenamed('semestre_mater','semestre_matri')
+
+
+graduados_notas =(grad_programa.groupBy('id_unico', 'semestre_matri','codigoprog_matri')
+                  .count()
+                  .join(notas_creditos,['id_unico','semestre_matri'],'inner')
+                 )
+
+
+window_id_prog_semestre = (Window
+                              .partitionBy('id_unico', 'codigoprog_matri', 'semestre_matri')
+                              .orderBy('codigoprog_matri')
+                             )
+
+graduados_ratio_creditos = (graduados_notas
+                            .withColumn('creditos_aprobados',F.sum("creditos").over(window_id_prog_semestre))
+                            .withColumn('creditos_aprobados_acumu')
+                            .where(col('notadefin_mater') > 3.5)
+                           )
+
+
+
+             .withColumn('tiempo_entre_ultimo_curso_inicio_pos',when(col('tiempo_entre_ultimo_curso_inicio_pos')==0,0).otherwise(col('tiempo_entre_ultimo_curso_inicio_pos')))
+
+
